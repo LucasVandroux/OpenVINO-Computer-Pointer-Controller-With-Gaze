@@ -45,7 +45,7 @@ class FaceDetectionModel(OpenVINOModel):
         output = self.inference(input_image)
 
         # Post process the output
-        results = self.postprocess_output(output['detection_out'], image)
+        results = self.postprocess_output(output[self.output_blob], image)
 
         return results
 
