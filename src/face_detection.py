@@ -1,3 +1,5 @@
+import cv2
+
 from model import OpenVINOModel
 from utils import BoundingBox
 
@@ -13,12 +15,12 @@ class FaceDetectionModel(OpenVINOModel):
     '''
     def __init__(self, model_xml_path, device='CPU', extensions_path=None, conf_threshold = 0.8):
         '''
-        Initialize the model
+        Initialize the model.
 
         Args:
-            model_xml_path (str): path to the model's structure in same folder as the .bin file
-            device (str: 'CPU'): device to load the model on
-            extensions_path (str | None: None): extensions to load in case it is needed
+            model_xml_path (str): path to the model's structure in same folder as the .bin file.
+            device (str: 'CPU'): device to load the model on.
+            extensions_path (str | None: None): extensions to load in case it is needed.
         '''
         self.conf_threshold = conf_threshold
 
@@ -27,13 +29,14 @@ class FaceDetectionModel(OpenVINOModel):
 
     def predict(self, image):
         '''
-        Detect the head on the image
+        Detect the head on the image.
         
         Args:
-        image (numpy.array BGR): image to do the inference on
+            image (numpy.array BGR): image to do the inference on.
 
         Returns:
-        results (): 
+            results (list[BoundingBox]): list of the detected heads above
+                the conf_threshold.
         '''
         # Pre process the image
         input_image = self.preprocess_input(image)
@@ -48,16 +51,16 @@ class FaceDetectionModel(OpenVINOModel):
 
     def postprocess_output(self, output, image):
         '''
-        Postprocss the output of the model
+        Postprocss the output of the model.
 
         Args:
             output (numpy.array): array [1, 1, #detections, 7] containing the 
                 bbox of the detected heads.
-            image (numpy.array): original image used for the inference
+            image (numpy.array): original image used for the inference.
         
         Returns:
             detected_heads (list[BoundingBox]): list of the detected heads above
-            the conf_threshold. 
+                the conf_threshold. 
         '''
         # Extract the dimension on the input image
         image_h, image_w, _ = image.shape
@@ -75,7 +78,7 @@ class FaceDetectionModel(OpenVINOModel):
 
             # Check if the confidence score is above the detection threshold
             if conf > self.conf_threshold:
-                label = int(detection[1])
+                label = 'head'
                 x_min = int(detection[3] * image_w)
                 y_min = int(detection[4] * image_h)
                 width = int(detection[5] * image_w - x_min)
@@ -90,4 +93,43 @@ class FaceDetectionModel(OpenVINOModel):
         sorted(detected_heads, key = lambda bbox: bbox.c, reverse=True)
 
         return detected_heads
+
+    def display_output(self, image, results, color = (0, 255, 0)):
+        '''
+        Display the bounding boxes on the image.
+
+        Args:
+            image (numpy.array): original image used for the inference.
+            results (list[BoundingBox]): list of the detected heads above
+                the conf_threshold.
+            color ((B, G, R): Green): color to draw the bounding boxes
+
+        Returns:
+            image_out (numpy.array): copy of the input image with the bounding 
+                boxes of the detected head
+        '''
+        # Copy the input image
+        image_out = image.copy()
+
+        for detection in results:
+            # Draw the bounding box
+            cv2.rectangle(
+                image_out,
+                (detection.x, detection.y),
+                (detection.x + detection.w, detection.y + detection.h),
+                color,
+                2,
+            )
+
+            # Write the confidence score
+            cv2.putText(
+                image_out,
+                str(round(detection.c, 2)),
+                (detection.x, detection.y - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5 ,
+                color
+            )
+        
+        return image_out
 
