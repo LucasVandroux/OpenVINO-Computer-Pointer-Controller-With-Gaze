@@ -5,7 +5,9 @@ import time
 import cv2 
 
 from input_feeder import InputFeeder
+
 from face_detection import FaceDetectionModel
+from head_pose_estimation import HeadPoseEstimationModel
 
 # Name of the cv2 window to display the feed
 WINDOW_NAME = 'Computer Pointer Controller With Gaze'
@@ -30,7 +32,7 @@ def build_argparser():
                         default='intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml',
                         help="Path to the xml file for the face detection model.")
     parser.add_argument("--model_head_pose", type=str,
-                        default='TODO',
+                        default='intel/head-pose-estimation-adas-0001/FP16-INT8/head-pose-estimation-adas-0001.xml',
                         help="Path to the xml file for the head pose model.")
     parser.add_argument("--model_face_landmark", type=str,
                         default='TODO',
@@ -38,6 +40,8 @@ def build_argparser():
     parser.add_argument("--model_gaze_estimation", type=str,
                         default='TODO',
                         help="Path to the xml file for the head pose model.")
+    parser.add_argument("--display_outputs", action="store_true",
+                        help="Display the outputs of the models.")
     return parser
 
 def infer_on_stream(args):
@@ -48,9 +52,6 @@ def infer_on_stream(args):
     :return: None
     """
     # --- INPUT ---
-    # Create a flag for single images
-    image_flag = False
-
     # Initialize the input_type
     input_type = None
     
@@ -74,6 +75,7 @@ def infer_on_stream(args):
     input_feeder.load_data()
 
     # --- MODELS ---
+    # Load the Face Detection Model
     face_detection_model = FaceDetectionModel(
         model_xml_path = args.model_face_detection,
         device = args.device,
@@ -81,6 +83,16 @@ def infer_on_stream(args):
     )
 
     face_detection_model.load_model()
+
+    # Load the Head Pose Estimation Model
+    head_pose_estimation_model = HeadPoseEstimationModel(
+        model_xml_path = args.model_head_pose,
+        device = args.device,
+        extensions_path = args.cpu_extension,
+    )
+
+    head_pose_estimation_model.load_model()
+
 
     # --- WINDOW ---
     # Set the window to fullscreen
@@ -96,12 +108,32 @@ def infer_on_stream(args):
         # start the timer
         start_time = time.time()
 
+        # Initialize the frame to be displayed
+        display_frame = frame
+
+        # --- DETECT HEAD ---
         # Detect the head on the frame
         list_heads = face_detection_model.predict(frame)
 
-        print(list_heads)
+        # Draw the outputs of the head detection algorithm
+        if args.display_outputs:
+             display_frame = face_detection_model.display_output(frame, list_heads)
 
-        display_frame = face_detection_model.display_output(frame, list_heads)
+        # --- HEAD POSE ESTIMATION ---
+        # Extract the roi of the head with the highest confidence score
+        head = list_heads[0]
+        head_x_max = head.x + head.w
+        head_y_max = head.y + head.h
+
+        head_roi = frame[head.y:head_y_max, head.x:head_x_max, :]
+
+        # Estimate the pose of the best head
+        head_angles = head_pose_estimation_model.predict(head_roi)
+
+        # Draw the pose of the best head
+        if args.display_outputs:
+            display_head_pose = head_pose_estimation_model.display_output(head_roi, head_angles)
+            display_frame[head.y:head_y_max, head.x:head_x_max, :] = display_head_pose
 
         # Calculate and print the FPS
         fps = round(1/(time.time() - start_time), 2)
