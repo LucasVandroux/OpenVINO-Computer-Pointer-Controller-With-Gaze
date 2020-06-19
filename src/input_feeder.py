@@ -35,8 +35,13 @@ class InputFeeder:
         If input_type is 'image', then it returns the same image.
         '''
         while True:
-            for _ in range(10):
-                _, frame=self.cap.read()
+            # Handle the use of images
+            if self.input_type == 'image':
+                frame = self.cap
+            # Handle Webcams and videos
+            else :
+                for _ in range(10):
+                    _, frame=self.cap.read()
             yield frame
 
 
