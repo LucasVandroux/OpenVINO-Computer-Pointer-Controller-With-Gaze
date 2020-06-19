@@ -7,6 +7,11 @@ import numpy as np
 
 from openvino.inference_engine import IENetwork, IECore
 
+'''
+Documentation: https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_binary_0001_description_face_detection_adas_binary_0001.html
+
+Download: python /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name face-detection-adas-binary-0001 --precisions FP32-INT1
+'''
 
 class FaceDetectionModel:
     '''
