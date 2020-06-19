@@ -7,3 +7,7 @@ BoundingBox = namedtuple("BoundingBox", "l c x y w h")
 
 PoseAngles = namedtuple("PoseAngles", "y p r")
 # where y is the yaw, p the pitch and r the roll
+
+Landmark = namedtuple("Landmark", "n x y")
+# where n is the name of the landmark,
+# (x,y) are the coordinates of the landmark
