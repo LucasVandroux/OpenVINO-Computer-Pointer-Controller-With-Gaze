@@ -2,6 +2,8 @@ from argparse import ArgumentParser
 import sys
 import time
 
+import cv2 
+
 from input_feeder import InputFeeder
 from face_detection import FaceDetectionModel
 
@@ -25,7 +27,7 @@ def build_argparser():
                              "Absolute path to a shared library with the"
                              "kernels impl.")
     parser.add_argument("--model_face_detection", type=str,
-                        default='TODO',
+                        default='intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml',
                         help="Path to the xml file for the face detection model.")
     parser.add_argument("--model_head_pose", type=str,
                         default='TODO',
@@ -38,7 +40,7 @@ def build_argparser():
                         help="Path to the xml file for the head pose model.")
     return parser
 
-def infer_on_stream(args, client):
+def infer_on_stream(args):
     """
     Initialize the inference network, stream video to network,
     and output stats and video.
@@ -82,16 +84,17 @@ def infer_on_stream(args, client):
 
     # --- WINDOW ---
     # Set the window to fullscreen
-    cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    # cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
+    # cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     #Loop until stream is over
-    while True:
+    for frame in input_feeder.next_batch():
+        # If there is no frame break the loop
+        if frame is None:
+            break
+
         # start the timer
         start_time = time.time()
-
-        # Read from the video capture
-        frame = input_feeder.next_batch()
 
         # Detect the head on the frame
         list_heads = face_detection_model.predict(frame)
@@ -100,8 +103,8 @@ def infer_on_stream(args, client):
 
         # Calculate and print the FPS
         fps = round(1/(time.time() - start_time), 2)
-        cv2.rectangle(frame, (10, 2), (50,20), (255,255,255), -1)
-        cv2.putText(frame, f"{fps}FPS",(15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
+        cv2.rectangle(frame, (10, 2), (120,20), (255,255,255), -1)
+        cv2.putText(frame, f"{fps} FPS",(15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
         
         # Display the frame
         cv2.imshow(WINDOW_NAME, frame)
@@ -116,6 +119,8 @@ def infer_on_stream(args, client):
 
     # Destroy any OpenCV windows
     cv2.destroyAllWindows()
+
+    print(f"[ INFO ] Successfully exited the program.")
 
 if __name__ == '__main__':
     # Grab command line args
