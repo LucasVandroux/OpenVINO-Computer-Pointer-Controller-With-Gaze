@@ -101,13 +101,15 @@ def infer_on_stream(args):
 
         print(list_heads)
 
+        display_frame = face_detection_model.display_output(frame, list_heads)
+
         # Calculate and print the FPS
         fps = round(1/(time.time() - start_time), 2)
-        cv2.rectangle(frame, (10, 2), (120,20), (255,255,255), -1)
-        cv2.putText(frame, f"{fps} FPS",(15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
+        cv2.rectangle(display_frame, (10, 2), (120,20), (255,255,255), -1)
+        cv2.putText(display_frame, f"{fps} FPS",(15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
         
         # Display the frame
-        cv2.imshow(WINDOW_NAME, frame)
+        cv2.imshow(WINDOW_NAME, display_frame)
 
         # Wait for 'ESC' or 'q' to exit the program
         keyboard = cv2.waitKey(30)
