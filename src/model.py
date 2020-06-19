@@ -5,7 +5,7 @@ import time
 import cv2
 import numpy as np
 
-from openvino.inference_engine import IENetwork, IECore
+from openvino.inference_engine import IECore
 
 class OpenVINOModel:
     '''
@@ -16,9 +16,9 @@ class OpenVINOModel:
         Initialize the model
 
         Args:
-        model_xml_path (str): path to the model's structure in same folder as the .bin file
-        device (str: 'CPU'): device to load the model on
-        extensions_path (str | None: None): extensions to load in case it is needed
+            model_xml_path (str): path to the model's structure in same folder as the .bin file
+            device (str: 'CPU'): device to load the model on
+            extensions_path (str | None: None): extensions to load in case it is needed
         '''
         # Extract the path to the directory containing the models files
         self.model_dir_path, filename = os.path.split(model_xml_path)
@@ -45,7 +45,10 @@ class OpenVINOModel:
         self.plugin = IECore()
 
         # Read IR as a IENetwork
-        self.network = IENetwork(model=self.model_structure_path, weights=self.model_weights_path)
+        self.network = self.plugin.read_network(
+            model=self.model_structure_path,
+            weights=self.model_weights_path
+            )
 
         # Load the extensions that might be needed
         # No need of CPU extension with the 2020.3 version of OpenVINO
@@ -77,10 +80,10 @@ class OpenVINOModel:
         Do the inference on an image
         
         Args:
-        input_image (numpy.array BGR): image already preprocessed for the model
+            input_image (numpy.array BGR): image already preprocessed for the model
 
         Returns:
-        output : return the output of the model 
+            output : return the output of the model 
         '''
         # Create the input dictionary
         input_dict = {self.input_blob: input_image}
@@ -95,10 +98,10 @@ class OpenVINOModel:
         Preprocess the image
 
         Args:
-        image (numpy.array BGR): image to preprocess
+            image (numpy.array BGR): image to preprocess
 
         Returns:
-        input_image (numpy.array): array containing the image with the dimensions [1x3x384x672]
+            input_image (numpy.array): array containing the image with the dimensions [1x3x384x672]
         '''
         # Get the input shape of the model
         net_input_shape = self.get_input_shape()
