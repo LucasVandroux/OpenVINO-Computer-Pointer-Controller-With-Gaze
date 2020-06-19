@@ -72,19 +72,16 @@ class OpenVINOModel:
         """
         return self.network.inputs[self.input_blob].shape
 
-    def inference(self, image):
+    def inference(self, input_image):
         '''
         Do the inference on an image
         
         Args:
-        image (numpy.array BGR): image to do the inference on
+        input_image (numpy.array BGR): image already preprocessed for the model
 
         Returns:
         output : return the output of the model 
         '''
-        # Pre process the image
-        input_image = self.preprocess_input(image)
-
         # Create the input dictionary
         input_dict = {self.input_blob: input_image}
 
