@@ -21,8 +21,13 @@ class HeadPoseEstimationModel(OpenVINOModel):
         Returns:
         results (PoseAngles): yaw, pitch and roll of the head
         '''
-        output = self.inference(image)
+        # Pre process the image
+        input_image = self.preprocess_input(image)
 
+        # Estimate the Head Pose
+        output = self.inference(input_image)
+        
+        # Postprocess the output of the model
         results = self.postprocess_output(output)
 
         return results
@@ -37,8 +42,13 @@ class HeadPoseEstimationModel(OpenVINOModel):
         Returns:
             (PoseAngles): yaw, pitch and roll of the head
         '''
+        # Extract the yaw in degree [-90,90]
         yaw = output['angle_y_fc'][0,0]
+
+        # Extract the pitch in degree [-70,70]
         pitch = output['angle_p_fc'][0,0]
+
+        # Extract the roll in degree [-70,70]
         roll = output['angle_r_fc'][0,0]
 
         return PoseAngles(yaw, pitch, roll)
