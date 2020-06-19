@@ -8,6 +8,7 @@ from input_feeder import InputFeeder
 
 from face_detection import FaceDetectionModel
 from head_pose_estimation import HeadPoseEstimationModel
+from facial_landmarks_detection import FacialLandmarksDetectionModel
 
 # Name of the cv2 window to display the feed
 WINDOW_NAME = 'Computer Pointer Controller With Gaze'
@@ -35,7 +36,7 @@ def build_argparser():
                         default='intel/head-pose-estimation-adas-0001/FP16-INT8/head-pose-estimation-adas-0001.xml',
                         help="Path to the xml file for the head pose model.")
     parser.add_argument("--model_face_landmark", type=str,
-                        default='TODO',
+                        default='intel/landmarks-regression-retail-0009/FP16-INT8/landmarks-regression-retail-0009.xml',
                         help="Path to the xml file for the face landmark model.")
     parser.add_argument("--model_gaze_estimation", type=str,
                         default='TODO',
@@ -93,6 +94,14 @@ def infer_on_stream(args):
 
     head_pose_estimation_model.load_model()
 
+    # Load the Facial Landmarks Detection Model
+    facial_landmarks_detection_model = FacialLandmarksDetectionModel(
+        model_xml_path = args.model_face_landmark,
+        device = args.device,
+        extensions_path = args.cpu_extension,
+    )
+
+    facial_landmarks_detection_model.load_model()
 
     # --- WINDOW ---
     # Set the window to fullscreen
@@ -134,6 +143,17 @@ def infer_on_stream(args):
         if args.display_outputs:
             display_head_pose = head_pose_estimation_model.display_output(head_roi, head_angles)
             display_frame[head.y:head_y_max, head.x:head_x_max, :] = display_head_pose
+
+        # --- FACIAL LANDMARKS DETECTION ---
+        # Detect the facial landmarks on the head with the highest confidence score
+        face_landmarks = facial_landmarks_detection_model.predict(head_roi)
+
+        # Draw the facial landmarks of the best head
+        if args.display_outputs:
+            # Set display_name to True to display the name of the landmarks
+            display_facial_landmarks = facial_landmarks_detection_model.display_output(display_head_pose, face_landmarks, display_name = True)
+            display_frame[head.y:head_y_max, head.x:head_x_max, :] = display_facial_landmarks
+
 
         # Calculate and print the FPS
         fps = round(1/(time.time() - start_time), 2)
