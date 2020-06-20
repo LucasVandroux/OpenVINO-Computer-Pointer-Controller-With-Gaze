@@ -24,6 +24,8 @@ python /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/down
 python /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name landmarks-regression-retail-0009 --precisions FP16-INT8
 python /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/downloader.py --name gaze-estimation-adas-0002 --precisions FP16-INT8
 ```
+
+You might still need to install some specific dependencies depending on your OS. Follow the instructions in your terminal.
 Models' Documentation:
 - Face Detection: [https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_binary_0001_description_face_detection_adas_binary_0001.html](https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_binary_0001_description_face_detection_adas_binary_0001.html)
 - Head Pose : [https://docs.openvinotoolkit.org/latest/_models_intel_head_pose_estimation_adas_0001_description_head_pose_estimation_adas_0001.html](https://docs.openvinotoolkit.org/latest/_models_intel_head_pose_estimation_adas_0001_description_head_pose_estimation_adas_0001.html)
@@ -50,3 +52,5 @@ If you have used Async Inference in your code, benchmark the results and explain
 
 ### Edge Cases
 There will be certain situations that will break your inference flow. For instance, lighting changes or multiple people in the frame. Explain some of the edge cases you encountered in your project and how you solved them to make your project more robust.
+
+Not both eyes are detected.
