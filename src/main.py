@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from statistics import mean 
 import sys
 import time
 
@@ -119,6 +120,9 @@ def infer_on_stream(args):
     # Set the window to fullscreen
     # cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
     # cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    
+    # Initialize list to track the inference time
+    list_inference_time = []
 
     #Loop until stream is over
     for frame in input_feeder.next_batch():
@@ -228,8 +232,11 @@ def infer_on_stream(args):
 
             )
 
+        stop_time = time.time()
+        list_inference_time.append(stop_time - start_time)
+
         # Calculate and print the FPS
-        fps = round(1/(time.time() - start_time), 2)
+        fps = round(1/(stop_time - start_time), 2)
         cv2.rectangle(display_frame, (10, 2), (120,20), (255,255,255), -1)
         cv2.putText(display_frame, f"{fps} FPS",(15, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
         
@@ -246,6 +253,9 @@ def infer_on_stream(args):
 
     # Destroy any OpenCV windows
     cv2.destroyAllWindows()
+
+    # Display the average inference time
+    print(f"[ INFO ] Average inference time was {mean(list_inference_time)}s.")
 
     print(f"[ INFO ] Successfully exited the program.")
 
