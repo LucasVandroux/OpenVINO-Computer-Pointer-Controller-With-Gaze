@@ -93,18 +93,38 @@ class GazeEstimationModel(OpenVINOModel):
         return Vector3D(x, y, z)
     
     def display_output(self, image, norm_gaze_vector, list_bbox_eye, color = (255, 0, 0), size = 5000):
+        """
+         Display the gaze vector from both eye on the image.
+
+        Args:
+            image (numpy.array): original image used for the inference.
+            norm_gaze_vector(numpy.array): size [3] normalized vector of the gaze direction
+            list_bbox_eye (list[BoundingBox]): list of the eyes bounding boxes
+            color ((B, G, R): Blue): color to draw the vector in
+            size (int: 5000): length of the gaze vector to display
+
+        Returns:
+            image_out (numpy.array): copy of the input image with the gaze vector displayed
+        """
+        # Copy the input image
+        image_out = image.copy()
+
+        # Calaculate distance from start to end according to size
         distance = sqrt(size)
         
+        # Draw the vector on each eye
         for bbox_eye in list_bbox_eye:
+            # Extract the start vector (eye position)
             x = bbox_eye.x + int(bbox_eye.w / 2)
             y = bbox_eye.y + int(bbox_eye.h / 2)
             start_vector = np.array([x, y, 0])
 
+            # Find the gaze vector
             gaze_vector = start_vector + norm_gaze_vector * distance
 
             # draw the vector
             cv2.arrowedLine(
-                image,
+                image_out,
                 (x, y),
                 (int(gaze_vector[0]), int(gaze_vector[1])),
                 color,
@@ -112,6 +132,6 @@ class GazeEstimationModel(OpenVINOModel):
                 tipLength = 0.5,
             )
         
-        return image
+        return image_out
 
 
