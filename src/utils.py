@@ -16,6 +16,9 @@ Landmark = namedtuple("Landmark", "n x y")
 # where n is the name of the landmark,
 # (x,y) are the coordinates of the landmark
 
+Vector3D = namedtuple("Vector3D", "x y z")
+# where (x, y, z) are the coordinates of the Vector
+
 def draw_3Daxis(img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
     '''
     Function to draw the 3D axis to represent a pose.
