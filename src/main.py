@@ -5,10 +5,12 @@ import time
 import cv2 
 
 from input_feeder import InputFeeder
+from utils import extract_landmark_roi
 
 from face_detection import FaceDetectionModel
 from head_pose_estimation import HeadPoseEstimationModel
 from facial_landmarks_detection import FacialLandmarksDetectionModel
+from gaze_estimation import GazeEstimationModel
 
 # Name of the cv2 window to display the feed
 WINDOW_NAME = 'Computer Pointer Controller With Gaze'
@@ -39,7 +41,7 @@ def build_argparser():
                         default='intel/landmarks-regression-retail-0009/FP16-INT8/landmarks-regression-retail-0009.xml',
                         help="Path to the xml file for the face landmark model.")
     parser.add_argument("--model_gaze_estimation", type=str,
-                        default='TODO',
+                        default='intel/gaze-estimation-adas-0002/FP16-INT8/gaze-estimation-adas-0002.xml',
                         help="Path to the xml file for the head pose model.")
     parser.add_argument("--display_outputs", action="store_true",
                         help="Display the outputs of the models.")
@@ -103,6 +105,15 @@ def infer_on_stream(args):
 
     facial_landmarks_detection_model.load_model()
 
+    # Load the Gaze Estimation Model
+    gaze_estimation_model = GazeEstimationModel(
+        model_xml_path = args.model_gaze_estimation,
+        device = args.device,
+        extensions_path = args.cpu_extension,
+    )
+
+    gaze_estimation_model.load_model()
+
     # --- WINDOW ---
     # Set the window to fullscreen
     # cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
@@ -126,7 +137,7 @@ def infer_on_stream(args):
 
         # Draw the outputs of the head detection algorithm
         if args.display_outputs:
-             display_frame = face_detection_model.display_output(frame, list_heads)
+            display_frame = face_detection_model.display_output(frame, list_heads)
 
         # --- HEAD POSE ESTIMATION ---
         # Extract the roi of the head with the highest confidence score
@@ -154,6 +165,47 @@ def infer_on_stream(args):
             display_facial_landmarks = facial_landmarks_detection_model.display_output(display_head_pose, face_landmarks, display_name = True)
             display_frame[head.y:head_y_max, head.x:head_x_max, :] = display_facial_landmarks
 
+        # --- GAZE ESTIMATION ---
+        # Calculate the eye ROI size
+        eye_roi_size = int(head_roi.shape[1] / 3)
+
+        # Extract the roi of the left eyes
+        left_eye_roi, left_eye_bbox = extract_landmark_roi(
+            name = 'left_eye', 
+            landmarks = face_landmarks,
+            roi_size = eye_roi_size,
+            image = frame,
+            origin_x = head.x,
+            origin_y = head.y,
+        )
+
+        # Extract the roi of the Rigth eyes
+        right_eye_roi, right_eye_bbox = extract_landmark_roi(
+            name = 'right_eye', 
+            landmarks = face_landmarks,
+            roi_size = eye_roi_size,
+            image = frame,
+            origin_x = head.x,
+            origin_y = head.y,
+        )
+
+        # Predict the gaze
+        gaze_vector = gaze_estimation_model.predict(
+            left_eye_image = left_eye_roi,
+            right_eye_image = right_eye_roi,
+            head_angles = head_angles,
+        ) 
+
+        print(gaze_vector)
+        
+        # Draw the gaze output and the eyes ROI
+        if args.display_outputs:
+            display_frame = face_detection_model.display_output(
+                display_frame, 
+                [left_eye_bbox, right_eye_bbox],
+                color = (255, 255, 255),
+                display_conf = False,
+            )
 
         # Calculate and print the FPS
         fps = round(1/(time.time() - start_time), 2)
