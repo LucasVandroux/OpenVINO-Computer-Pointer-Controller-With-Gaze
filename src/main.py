@@ -3,6 +3,7 @@ import sys
 import time
 
 import cv2 
+import numpy as np
 
 from input_feeder import InputFeeder
 from utils import extract_landmark_roi
@@ -196,10 +197,22 @@ def infer_on_stream(args):
             head_angles = head_angles,
         ) 
 
-        print(gaze_vector)
+        # normalize the gaze vector based on the left eye
+        left_eye_x_center = left_eye_bbox.x + int(left_eye_bbox.w /2)
+        left_eye_y_center = left_eye_bbox.y + int(left_eye_bbox.h /2)
+        start_vector = np.array([left_eye_x_center, left_eye_y_center, 0])
+        
+        end_vector = np.array([
+            left_eye_x_center + gaze_vector.x,
+            left_eye_y_center - gaze_vector.y,
+            0 + gaze_vector.z])
+        
+        vector = end_vector - start_vector
+        norm_gaze_vector =  vector / np.sqrt(np.dot(vector,vector))
 
         # Draw the gaze output and the eyes ROI
         if args.display_outputs:
+            # draw the bbox around each eyes
             display_frame = face_detection_model.display_output(
                 display_frame, 
                 [left_eye_bbox, right_eye_bbox],
@@ -207,7 +220,13 @@ def infer_on_stream(args):
                 display_conf = False,
             )
 
-            # TODO draw the gaze of both eyes
+            # draw the gaze from both eyes
+            display_frame = gaze_estimation_model.display_output(
+                display_frame,
+                norm_gaze_vector,
+                [left_eye_bbox, right_eye_bbox],
+
+            )
 
         # Calculate and print the FPS
         fps = round(1/(time.time() - start_time), 2)
