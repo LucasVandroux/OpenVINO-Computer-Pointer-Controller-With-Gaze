@@ -48,6 +48,8 @@ def build_argparser():
                         help="Path to the xml file for the head pose model.")
     parser.add_argument("--display_outputs", action="store_true",
                         help="Display the outputs of the models.")
+    parser.add_argument("--disable_pointer_controller", action="store_true",
+                        help="Disable the control of the pointer.")
     return parser
 
 def infer_on_stream(args):
@@ -240,7 +242,8 @@ def infer_on_stream(args):
             )
 
         # Update position of the Computer Pointer
-        pointer_controller.move(gaze_vector.x, gaze_vector.y)
+        if not args.disable_pointer_controller:
+            pointer_controller.move(gaze_vector.x, gaze_vector.y)
 
         # Calculate the inference time
         stop_time = time.time()
