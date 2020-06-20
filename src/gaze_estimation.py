@@ -1,3 +1,6 @@
+from math import sqrt
+
+import cv2
 import numpy as np
 
 from model import OpenVINOModel
@@ -80,7 +83,7 @@ class GazeEstimationModel(OpenVINOModel):
                 of the 3D vector representing the gaze direction
 
         Returns:
-            (Vector3D): 3D Vector (x, y z)
+            (Vector3D): 3D Vector (x, y z) not normalized
         '''
         # Extract the coordinates of the 3D vector
         x = output[0,0]
@@ -88,4 +91,27 @@ class GazeEstimationModel(OpenVINOModel):
         z = output[0,2]
 
         return Vector3D(x, y, z)
+    
+    def display_output(self, image, norm_gaze_vector, list_bbox_eye, color = (255, 0, 0), size = 5000):
+        distance = sqrt(size)
+        
+        for bbox_eye in list_bbox_eye:
+            x = bbox_eye.x + int(bbox_eye.w / 2)
+            y = bbox_eye.y + int(bbox_eye.h / 2)
+            start_vector = np.array([x, y, 0])
+
+            gaze_vector = start_vector + norm_gaze_vector * distance
+
+            # draw the vector
+            cv2.arrowedLine(
+                image,
+                (x, y),
+                (int(gaze_vector[0]), int(gaze_vector[1])),
+                color,
+                thickness = 2,
+                tipLength = 0.5,
+            )
+        
+        return image
+
 
