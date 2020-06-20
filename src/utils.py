@@ -65,3 +65,49 @@ def draw_3Daxis(img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
     cv2.line(img, (int(tdx), int(tdy)), (int(x3),int(y3)),(255,0,0),2)
 
     return img
+
+def extract_landmark_roi(name, landmarks, roi_size, image, origin_x = 0, origin_y = 0):
+    '''
+    Extract the ROI around a landmark
+
+    Args:
+        name (str): name of the landmark to extract.
+        landmarks (list[Landmark]): list of Landmark.
+        roi_size (int): size of the ROI [roi_size x roi_size].
+        image (numpy.array): image to extract the ROI from.
+        origin_x (int: 0): to move the origin if the landmark was 
+            extracted from a different ROI.
+        origin_y (int: 0): to move the origin if the landmark was 
+            extracted from a different ROI.
+    
+    Returns:
+        landmark_roi (numpy.array): extracted ROI around the landmark
+        landmark_bbox (BoundingBox): bounding box containing all the 
+            information of the ROI
+
+    '''
+    # Extract the landmark 
+    landmark = [l for l in landmarks if l.n == name][0]
+
+    # Find the coordinates of the landmark in the frame
+    x = origin_x + landmark.x
+    y = origin_y + landmark.y
+
+    # Calculate the roi_halfsize
+    roi_halfsize = int(roi_size / 2)
+
+    # Find the x limits
+    x_min = x - roi_halfsize
+    x_max = x + (roi_size - roi_halfsize)
+
+    # Find the y limits
+    y_min = y - roi_halfsize
+    y_max = y + (roi_size - roi_halfsize)
+
+    # Extract the ROI from the frame
+    landmark_roi = image[y_min:y_max, x_min:x_max, :]
+
+    # Create a Bounding Box out the ROI
+    landmark_bbox = BoundingBox(name, 1, x_min, y_min, int(x_max-x_min), int(y_max-y_min))
+
+    return landmark_roi, landmark_bbox
