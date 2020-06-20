@@ -19,13 +19,13 @@ Landmark = namedtuple("Landmark", "n x y")
 Vector3D = namedtuple("Vector3D", "x y z")
 # where (x, y, z) are the coordinates of the Vector
 
-def draw_3Daxis(img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
+def draw_3Daxis(image, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
     '''
     Function to draw the 3D axis to represent a pose.
     Source: https://github.com/natanielruiz/deep-head-pose/blob/master/code/utils.py
 
     Args:
-        img (numpy.array): image on which to draw the 3D axis
+        image (numpy.array): image on which to draw the 3D axis
         yaw (float): yaw angle of the pose
         pitch (float): pitch angle of the pose
         roll (float): roll angle of the pose
@@ -34,7 +34,7 @@ def draw_3Daxis(img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
         size (int: 100): length of the axis
 
     Returns:
-        img (numpy.array): returns input image with the 3D axis
+        image (numpy.array): returns input image with the 3D axis
     '''
     # Convert the angles to radians
     pitch = pitch * np.pi / 180
@@ -46,7 +46,7 @@ def draw_3Daxis(img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
         tdx = tdx
         tdy = tdy
     else:
-        height, width = img.shape[:2]
+        height, width = image.shape[:2]
         tdx = width / 2
         tdy = height / 2
 
@@ -63,11 +63,11 @@ def draw_3Daxis(img, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
     y3 = size * (-cos(yaw) * sin(pitch)) + tdy
 
     # Draw the axis
-    cv2.line(img, (int(tdx), int(tdy)), (int(x1),int(y1)),(0,0,255),2)
-    cv2.line(img, (int(tdx), int(tdy)), (int(x2),int(y2)),(0,255,0),2)
-    cv2.line(img, (int(tdx), int(tdy)), (int(x3),int(y3)),(255,0,0),2)
+    cv2.line(image, (int(tdx), int(tdy)), (int(x1),int(y1)),(0,0,255),2)
+    cv2.line(image, (int(tdx), int(tdy)), (int(x2),int(y2)),(0,255,0),2)
+    cv2.line(image, (int(tdx), int(tdy)), (int(x3),int(y3)),(255,0,0),2)
 
-    return img
+    return image
 
 def extract_landmark_roi(name, landmarks, roi_size, image, origin_x = 0, origin_y = 0):
     '''
