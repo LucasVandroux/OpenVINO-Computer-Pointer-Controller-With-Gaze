@@ -94,7 +94,7 @@ class FaceDetectionModel(OpenVINOModel):
 
         return detected_heads
 
-    def display_output(self, image, results, color = (0, 255, 0)):
+    def display_output(self, image, results, color = (0, 255, 0), display_conf = True):
         '''
         Display the bounding boxes on the image.
 
@@ -103,6 +103,7 @@ class FaceDetectionModel(OpenVINOModel):
             results (list[BoundingBox]): list of the detected heads above
                 the conf_threshold.
             color ((B, G, R): Green): color to draw the bounding boxes
+            display_conf (Bool: True): Display the confidence of the detection
 
         Returns:
             image_out (numpy.array): copy of the input image with the bounding 
@@ -121,15 +122,16 @@ class FaceDetectionModel(OpenVINOModel):
                 2,
             )
 
-            # Write the confidence score
-            cv2.putText(
-                image_out,
-                str(round(detection.c, 2)),
-                (detection.x, detection.y - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5 ,
-                color
-            )
+            if display_conf:
+                # Write the confidence score
+                cv2.putText(
+                    image_out,
+                    str(round(detection.c, 2)),
+                    (detection.x, detection.y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5 ,
+                    color
+                )
         
         return image_out
 
