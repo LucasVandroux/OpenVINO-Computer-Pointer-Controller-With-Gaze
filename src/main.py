@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 
 from input_feeder import InputFeeder
+from mouse_controller import MouseController
 from utils import extract_landmark_roi
 
 from face_detection import FaceDetectionModel
@@ -115,6 +116,12 @@ def infer_on_stream(args):
     )
 
     gaze_estimation_model.load_model()
+
+    # --- POINTER CONTROLLER ---
+    pointer_controller = MouseController(
+        precision = 'medium',
+        speed = 'medium',
+    )
 
     # --- WINDOW ---
     # Set the window to fullscreen
@@ -232,6 +239,10 @@ def infer_on_stream(args):
 
             )
 
+        # Update position of the Computer Pointer
+        pointer_controller.move(gaze_vector.x, gaze_vector.y)
+
+        # Calculate the inference time
         stop_time = time.time()
         list_inference_time.append(stop_time - start_time)
 
