@@ -197,7 +197,7 @@ def infer_on_stream(args):
         ) 
 
         print(gaze_vector)
-        
+
         # Draw the gaze output and the eyes ROI
         if args.display_outputs:
             display_frame = face_detection_model.display_output(
@@ -206,6 +206,8 @@ def infer_on_stream(args):
                 color = (255, 255, 255),
                 display_conf = False,
             )
+
+            # TODO draw the gaze of both eyes
 
         # Calculate and print the FPS
         fps = round(1/(time.time() - start_time), 2)
