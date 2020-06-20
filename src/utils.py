@@ -69,25 +69,6 @@ def draw_3Daxis(image, yaw, pitch, roll, tdx=None, tdy=None, size = 100):
 
     return image
 
-def draw_Vector3D(image, vector_3d, x, y, size = 50):
-'''
-    Function to draw the 3D vector to represent a gaze of a specific eye.
-
-    Args:
-        image (numpy.array): image on which to draw the 3D vector
-        vector_3d (Vector3D): Vector3D to draw
-        x (int): origin of the vector
-        y (int): origin of the vector
-        size (int: 50): length of the axis
-
-    Returns:
-        image (numpy.array): returns input image with the 3D axis
-    '''
-    
-    #TODO
-
-    return image
-
 def extract_landmark_roi(name, landmarks, roi_size, image, origin_x = 0, origin_y = 0):
     '''
     Extract the ROI around a landmark
