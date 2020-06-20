@@ -268,8 +268,9 @@ def infer_on_stream(args):
     # Destroy any OpenCV windows
     cv2.destroyAllWindows()
 
-    # Display the average inference time
-    print(f"[ INFO ] Average inference time was {mean(list_inference_time)}s.")
+    # Display the average inference time and fps
+    average_fps = round(1/(mean(list_inference_time)), 2)
+    print(f"[ INFO ] Average inference time was {mean(list_inference_time)}s ({average_fps} FPS).")
 
     print(f"[ INFO ] Successfully exited the program.")
 
